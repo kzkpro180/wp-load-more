@@ -152,11 +152,12 @@ class Load_more {
 		//  variables
 		global $pdir, $wp_query;
 		
+		$postType = (isset($_GET['postType'])) ? $_GET['postType'] : 'post';
 		$numPosts = (isset($_GET['numPosts'])) ? $_GET['numPosts'] : 0;
 		$page = (isset($_GET['pageNumber'])) ? $_GET['pageNumber'] : 0;
 		$term = (isset($_GET['term']) && $_GET['term'] != 'all') ? $_GET['term'] : '';
 		$args = array(
-			'post_type' => 'post',
+			'post_type' => $postType,
 			'posts_per_page' => $numPosts,
 			'paged'          => $page,
 			
@@ -223,16 +224,21 @@ class Load_more {
 	        'align' => 'center',
 	        'taxonomy' => 'category',
 	    ), $atts );
+	    $output = '';
 	    $res = get_terms( array($attr['taxonomy']));
-	    $htm = '<li><a href="#cat=all" data-slug="all" >All</a></li>';
-	    $wrap_start = '<section class="loadmore-menu-container"><ul class="loadmore-menu">';
-	    $wrap_end = '</ul></section>';
-	    foreach ($res as $ret) {
-	    	# code...
-	    	if($ret->slug !== 'uncategorized')
-	    		$htm .= '<li><a href="#cat='.$ret->slug.'" data-slug="'.$ret->slug.'" >'.$ret->name.'</a></li>';
-	    }
-	    $output = $wrap_start.$htm.$wrap_end;
+
+	    if(!isset($res->errors)):
+		    $htm = '<li><a href="#cat=all" data-slug="all" >All</a></li>';
+		    $wrap_start = '<section class="loadmore-menu-container"><ul class="loadmore-menu">';
+		    $wrap_end = '</ul></section>';
+		   
+		    foreach ($res as $ret) {
+		    	# code...
+		    	if($ret->slug !== 'uncategorized')
+		    		$htm .= '<li><a href="#cat='.$ret->slug.'" data-slug="'.$ret->slug.'" >'.$ret->name.'</a></li>';
+		    }
+		    $output = $wrap_start.$htm.$wrap_end;
+		endif;
 	    return  $output;
 	}
 	
@@ -274,7 +280,7 @@ class Load_more {
 					    var page_count = function(){
 					    	$.ajax({
 				                method     : "GET",
-				                data       : { action : "ajax_getPosts", task: "page_count", numPosts : 12, pageNumber: attrs.page, term: attrs.term},
+				                data       : { action : "ajax_getPosts", postType: "<?php echo $a['post_type'] ?>",  task: "page_count", numPosts : 12, pageNumber: attrs.page, term: attrs.term},
 				                url        : ajaxurl,
 				                
 				                success    : function(data){
@@ -289,7 +295,7 @@ class Load_more {
 					    var load_posts = function(){
 				            $.ajax({
 				                method     : "GET",
-				                data       : { action : "ajax_getPosts", numPosts : 12, pageNumber: attrs.page, term: attrs.term},
+				                data       : { action : "ajax_getPosts", postType: "<?php echo $a['post_type'] ?>", numPosts : 12, pageNumber: attrs.page, term: attrs.term},
 				                dataType   : "html",
 				                url        : ajaxurl,
 				                beforeSend : function(){
@@ -340,8 +346,11 @@ class Load_more {
 								term: slug,
 								change: true
 							}
+							if(slug == "all"){
+								args.term = '';
+							}
 							//that.clean_template_container();
-							that.ajaxRequest((slug !== "all")? args : '');
+							that.ajaxRequest(args);
 							
 						});
 					},
@@ -379,11 +388,6 @@ class Load_more {
 	    return $output.$script;
 	}
 	
-
-	public function loadmore_template_sec(){
-		$output = '<section id="loadmore-template-sec-container" > </section>';
-		return $output;
-	}
 
 	//button template
 	public function loadmore_button( $atts ) {
