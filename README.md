@@ -8,11 +8,12 @@ A wordpress load more plugin
 
 ##How to use?
 ###Shortcodes
-*[loadmore_nav taxonomy="category"]
-**Loads category list . use taxonomy = "taxonomy used in post type" by default it's "category"
 
-*[loadmore_template post_type="piper"]
-**Loads template container and ajax scripts
+####[loadmore_nav taxonomy="category"]
+* Loads category list . use taxonomy = "taxonomy used in post type" by default it's "category"
 
-*[loadmore_button]
-**show load more button is post page is more that one.
+####[loadmore_template post_type="piper"]
+* Loads template container and ajax scripts
+
+####[loadmore_button]
+* show load more button is post page is more that one.
